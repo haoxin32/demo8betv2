@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>8Bet - 安全連線入口</title>
+    <!-- 預載入關鍵資源提升載入速度 -->
+    <link rel="preload" as="image" href="images/8bet.webp">
+    <link rel="preload" as="image" href="images/logo.webp">
+    <style>
+        :root {
+            --primary-yellow: #ffe600;
+            --primary-red: #d10000;
+            --accent-purple: #2b1055;
+            --dark-bg: #0f0f0f;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-gold: #ffcc00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 120px;
+            position: relative;
+        }
+
+        @media (prefers-color-scheme: light) {
+            body { background-color: #f0f0f0; }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #0f0f0f; }
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background-image: url('images/8bet.webp');
+            background-size: cover;
+            background-position: center 25%;
+            background-repeat: no-repeat;
+            z-index: -2;
+            filter: brightness(0.5) contrast(1.1) saturate(1.1);
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(43, 16, 85, 0.3) 0%, rgba(15, 15, 15, 0.8) 100%);
+            z-index: -1;
+        }
+
+        /* --- Main Content --- */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 15px 30px 15px;
+            text-align: center;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .logo-container {
+            width: 250px;
+            margin: 15px 0;
+            filter: drop-shadow(0 0 20px rgba(255, 230, 0, 0.3));
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* --- Banner --- */
+        .banner-container {
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            padding: 3px;
+            background: linear-gradient(135deg, #0a1128 0%, #1c2b59 50%, #0a1128 100%);
+            border: 1px solid rgba(255, 202, 40, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+            aspect-ratio: 4 / 3; /* Điều chỉnh tỷ lệ cho phù hợp với game */
+            overflow: hidden; /* Đảm bảo iframe không tràn ra ngoài */
+            aspect-ratio: 2 / 3; /* Điều chỉnh tỷ lệ cao hơn, chiếm ~70% chiều cao màn hình mobile */
+            overflow: hidden; /* Đảm bảo iframe không tràn ra ngoài */        
+        }
+
+        .banner-container::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            border-radius: 13px;
+            border: 1px solid rgba(255, 202, 40, 0.15);
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .banner-container img,
+        .banner-container video {
+            width: 100%;
+            display: block;
+            pointer-events: none;
+            border-radius: 13px;
+            box-sizing: border-box;
+            background-color: #000;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Featured --- */
+        .featured-container {
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .featured-slider {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 15px;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        .featured-slider::-webkit-scrollbar { display: none; }
+
+        .featured-item {
+            flex: 0 0 90%;
+            scroll-snap-align: center;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .featured-item img {
+            width: 100%;
+            display: block;
+        }
+
+        .game-grid-title {
+            font-size: 14px;
+            color: var(--primary-yellow);
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .game-grid-container {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 10px 0;
+        }
+
+        .game-marquee {
+            display: flex;
+            animation: marquee 30s linear infinite;
+            width: max-content;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 12px;
+            padding: 8px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+
+        .game-card img {
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- Sticky Footer CTA --- */
+        .footer-cta {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            padding: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 40%, transparent 100%);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .sticky-btn {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.6));
+        }
+
+        .sticky-btn img,
+        .sticky-btn svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .sticky-btn:active { transform: scale(0.95); }
+
+        /* --- Side Buttons --- */
+        .side-buttons {
+            position: fixed;
+            right: 15px;
+            top: 45%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 50;
+        }
+
+        .side-btn {
+            background: none;
+            border: none;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .side-btn img {
+            width: 55px;
+            height: 55px;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.6));
+            transition: transform 0.3s ease;
+        }
+
+        .side-btn:hover img { transform: scale(1.1) rotate(5deg); }
+
+        @media (min-width: 480px) {
+            .side-buttons { right: calc(50% - 240px + 10px); }
+        }
+
+        .side-btn span {
+            font-size: 11px;
+            color: #fff;
+            font-weight: bold;
+            margin-top: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 8px;
+            border-radius: 8px;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--primary-red);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #fff;
+        }
+
+        .bottom-marquee { display: none !important; }
+
+        /* --- Gift Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #2b1055 0%, #000 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 85%;
+            max-width: 360px;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .modal-action-btn {
+            background: var(--primary-yellow);
+            color: var(--primary-red);
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- Game Modal --- */
+        .game-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            z-index: 2000;
+        }
+
+        .game-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            background: none;
+            z-index: 2001;
+            text-shadow: 0 0 5px black;
+        }
+
+        /* --- Game Loading Indicator --- */
+        #gameLoader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 2002;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 52px;
+            height: 52px;
+            border: 5px solid rgba(255, 230, 0, 0.2);
+            border-top-color: var(--primary-yellow);
+            border-radius: 50%;
+            animation: spin 0.85s linear infinite;
+        }
+
+        .loader-text {
+            color: #fff;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            opacity: 0.85;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="content">
+        <div class="logo-container">
+            <img src="images/cropped-logo-header.webp" alt="8bet" decoding="async">
+        </div>
+
+        <div class="banner-container">
+            <iframe id="bannerGameFrame" src="" style="width: 100%; height: 100%; border: none; border-radius: 13px;" title="Game Demo"></iframe>
+        </div>
+
+        <div class="game-grid-title">
+            <span>👇 主打活動 👇</span>
+        </div>
+        <div class="featured-container">
+            <div class="featured-slider" id="featuredSlider">
+                <div class="featured-item"><img src="images/promotion/01-2044x800_713.webp" alt="Bonus 0" loading="lazy" decoding="async"></div>
+                <div class="featured-item"><img src="images/promotion/02-2044x800_419.webp" alt="Bonus 1" loading="lazy" decoding="async"></div>
+                <div class="featured-item"><img src="images/promotion/03-2044x800_321.webp" alt="Bonus 2" loading="lazy" decoding="async"></div>
+                <div class="featured-item"><img src="images/promotion/04-2044x800_727.webp" alt="Bonus 3" loading="lazy" decoding="async"></div>
+                <div class="featured-item"><img src="images/promotion/05-2044x800_165-_1_.webp" alt="Bonus 3" loading="lazy" decoding="async"></div>
+                <div class="featured-item"><img src="images/promotion/05-2044x800_165.webp" alt="Bonus 3" loading="lazy" decoding="async"></div>
+            </div>
+        </div>
+
+        <div class="game-grid-title">
+            <span>👇 合作遊戲品牌 👇</span>
+        </div>
+        <div class="game-grid-container">
+            <div class="game-marquee" id="gameMarquee">
+                <!-- 由 JS 填寫內容 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Sticky Footer CTA -->
+    <div class="footer-cta">
+        <a href="#" class="sticky-btn">
+            <img src="images/cta_button.webp" alt="立即註冊領取優惠" loading="lazy" decoding="async"
+                onerror="this.src='https://placehold.co/750x160/ffe600/4a0082?text=Register+Now!'">
+        </a>
+    </div>
+
+    <!-- Side Buttons -->
+    <div class="side-buttons">
+        <button class="side-btn gift" id="openGiftModal">
+            <span class="badge">1</span>
+            <img src="images/sdasdas-removebg-preview.webp" alt="優惠" loading="lazy" decoding="async">
+            <span>領取福利</span>
+        </button>
+
+    </div>
+
+    <!-- Gift Modal -->
+    <div class="modal-overlay" id="giftModalOverlay">
+        <div class="modal-content">
+            <button class="close-btn" id="closeGiftModal">&times;</button>
+            <img src="images/promotion/888_858.webp" alt="優惠" loading="lazy" decoding="async"
+                style="width: 100%; border-radius: 15px; margin-bottom: 25px;">
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 12px; color: var(--primary-yellow);">🎉 開運紅包已送達</div>
+            <p style="font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.6;">恭喜獲得專屬開運金！<br>現在註冊即刻領取，挑戰最高獎金。</p>
+            <button class="modal-action-btn">立即領取紅包</button>
+        </div>
+    </div>
+
+    <!-- Game Modal (Chơi thử) -->
+    <div class="game-modal-overlay" id="gameModalOverlay">
+        <button class="game-close-btn" id="closeGameModal">&times;</button>
+
+        <!-- Loading Indicator -->
+        <div id="gameLoader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">⏳ Đang tải game...</div>
+        </div>
+
+        <iframe id="gameFrame" style="width:100%; height:100%; border:none;"></iframe>
+    </div>
+
+    <script>
+        const CONFIG = {
+            registerUrl: "https://demo8bet.com",
+            registerUrl: "https://ry6668.com/ag/metameta3/auth/register",
+            demoGameUrl: "https://m.southasiabp-demo.cc/74/index.html?gi=74&ot=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGUiOjE3Nzg2NTYxMjQsInVzZXIiOiJ7XCJpZFwiOjEwMDAxMyxcIm9wZXJhdGVyX2lkXCI6MSxcImFnZW50X2lkXCI6MTAwMDEzLFwiYXBwX2lkXCI6MTAwMTMsXCJhY2NvdW50X3R5cGVcIjowLFwibm93X2dhbWVfaWRcIjowLFwibmlja19uYW1lXCI6XCJcIixcInRva2VuXCI6XCJcIixcImxhbmd1YWdlXCI6XCJcIixcInJlZ2lvblwiOlwiaGtcIn0ifQ.D-GV9NwK35Y7W_dHg8tVDS6Voc4MFTStI4pVPY232rY&reqt=1778656154&op=1727060615&cid=0&n=74&ct=BRL&__refer=m.southasiabp-demo.cc&or=static.southasiabp-demo.cc&btt=1&ah=api-demo&ops=luck_single_10013&oc=0&l=zh&__hv=1f415526&gv=e44a6",
+        };
+
+        // --- Game Marquee ---
+        const gameMarquee = document.getElementById('gameMarquee');
+        const logos = [1, 2, 3, 5, 8, 12, 23, 31];
+
+        logos.forEach(num => {
+            const pad = num.toString().padStart(2, '0');
+            const card = document.createElement('div');
+            card.className = 'game-card';
+            card.innerHTML = `<img src="icon/gamelogo${pad}.webp" alt="Game Logo" loading="lazy" decoding="async">`;
+            gameMarquee.appendChild(card);
+        });
+
+        gameMarquee.innerHTML += gameMarquee.innerHTML;
+
+        // --- Featured Slider Auto-scroll ---
+        const featuredSlider = document.getElementById('featuredSlider');
+        let fIndex = 0;
+        setInterval(() => {
+            const items = featuredSlider.querySelectorAll('.featured-item');
+            if (items.length > 0) {
+                fIndex = (fIndex + 1) % items.length;
+                const scrollPos = items[fIndex].offsetLeft - (featuredSlider.offsetWidth * 0.05);
+                featuredSlider.scrollTo({ left: scrollPos, behavior: 'smooth' });
+            }
+        }, 4000);
+
+        // --- Gift Modal ---
+        const modal = document.getElementById('giftModalOverlay');
+        document.getElementById('openGiftModal').onclick = () => modal.style.display = 'flex';
+        document.getElementById('closeGiftModal').onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+        // --- Game Modal (Chơi thử) với Loading Indicator ---
+        const gameModal = document.getElementById('gameModalOverlay');
+        const gameFrame = document.getElementById('gameFrame');
+        const gameLoader = document.getElementById('gameLoader');
+        const closeGameBtn = document.getElementById('closeGameModal');
+
+        const openDemoGame = () => {
+            // Hiện loading trước
+            gameLoader.style.display = 'flex';
+            gameFrame.style.opacity = '0';
+
+            // Gán URL game
+            gameFrame.src = CONFIG.demoGameUrl;
+
+            // Mở modal
+            gameModal.style.display = 'block';
+
+            // Khi iframe load xong → ẩn loading, hiện game
+            gameFrame.onload = () => {
+                gameLoader.style.display = 'none';
+                gameFrame.style.opacity = '1';
+                gameFrame.style.transition = 'opacity 0.3s ease';
+            };
+        };
+
+        if (closeGameBtn) {
+            closeGameBtn.onclick = () => {
+                gameModal.style.display = 'none';
+                gameFrame.src = '';
+                gameFrame.style.opacity = '0';
+                gameLoader.style.display = 'none';
+            };
+        }
+
+        // --- Embed Game in Banner ---
+        const bannerFrame = document.getElementById('bannerGameFrame');
+        if (bannerFrame) {
+            bannerFrame.src = CONFIG.demoGameUrl;
+        }
+
+        // --- Bind URLs to Elements ---
+        const clickableElements = document.querySelectorAll('.featured-item, .game-card, .modal-action-btn, .sticky-btn');
+        clickableElements.forEach(el => {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (el.matches('.featured-item')) {
+                    openDemoGame();
+                } else {
+                    window.location.href = CONFIG.registerUrl;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
